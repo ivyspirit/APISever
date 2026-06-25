@@ -235,8 +235,13 @@ Request:
 POST /turn       Content-Type: application/json
 { "workspaceId":"signup-app",
   "instruction":"add input validation to the signup function",
+  "mode":"voice",                                                               # optional, "voice" | "text", default "voice"
   "history":[ {"role":"user","text":"..."}, {"role":"agent","text":"..."} ] }   # history optional
 ```
+The client sends `mode` to tell the agent its modality. `voice` (default)
+constrains the agent to bounded `choice`/`confirmation` decisions; `text`
+(desktop handoff) is the reserved seam that would unlock the free-form `prompt`
+variant. Voice build implements `voice` only.
 Response: `200, Content-Type: text/event-stream`. One AgentEvent per `data:`
 line, in order, terminating in exactly one `Done` OR one `Error`.
 
@@ -392,6 +397,22 @@ the chosen label/id, with this question in `history`.
 Client: render the summary + risk pill + the three action buttons (highlight
 `recommendedAction`), listen for "approve" / "reject" / "defer". The answer
 becomes a new `/turn` whose `instruction` is the chosen action.
+
+### Interaction mode (voice vs text) — design seam, voice-only for now
+The agent always knows it is in **voice-control mode** (the system prompt
+states this). In voice mode every need for human input MUST be a **bounded**
+decision — `choice` or `confirmation`, never an open-ended question — because
+spoken answers while driving must be short and low-STT-risk. (Answers are still
+free text under the hood — the next `/turn`'s instruction — so a user *may* say
+something off-list; the options are the safe, glanceable default, not a cage.)
+
+`mode` (`voice` | `text`, client-supplied per turn, default `voice`) is the
+seam for the brief's **non-voice handoff**: a future `text` mode (desktop
+review) may relax the constraint and use a reserved third variant —
+**`prompt`** (free-form `{ kind:"prompt", question, hint? }`). The `prompt`
+variant and `text` mode are intentionally part of the design but are NOT
+implemented in the voice build; the protocol leaves room for them so the
+handoff needs no redesign.
 
 ### Risk levels (set by the server's RiskClassifier, deterministic)
 - `LOW` — single file, additive, no deletes → usually auto-applied, no DecisionRequest.
