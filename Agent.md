@@ -100,9 +100,6 @@ The PR description MUST use exactly these sections, in this order:
 ## Title
 <concise, slice-scoped, e.g. "Slice 2: AgentEvent protocol + SSE + FAKE_AGENT /turn">
 
-## Goal / why this PR exists
-<the user problem / SPEC section this slice satisfies, in 1–3 sentences>
-
 ## Architecture changes
 <new/changed abstractions, interfaces, and seams; what swaps in production>
 
