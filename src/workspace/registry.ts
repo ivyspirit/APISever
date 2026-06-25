@@ -1,36 +1,37 @@
 import { join } from "node:path";
 import type { WorkspaceInfo } from "./types.js";
+import { LocalWorkspace, type Workspace } from "./Workspace.js";
 
 /**
  * Resolves workspace ids to their on-disk locations. The set is hardcoded (the
  * brief allows pre-registered local dirs; the client selects, never creates).
- * Later slices add a `get(id): Workspace` that hands back a file-access object
- * bound to this path; Slice 1 only needs to list and look up the registry.
+ * `list()` powers GET /workspaces; `get()` hands back a file-access Workspace
+ * bound to the entry's path for the agent to operate on.
  */
 export interface WorkspaceRegistry {
   list(): WorkspaceInfo[];
-  find(id: string): WorkspaceInfo | undefined;
+  get(id: string): Workspace | undefined;
 }
 
 export class StaticWorkspaceRegistry implements WorkspaceRegistry {
-  private readonly byId: Map<string, WorkspaceInfo>;
+  private readonly byId: Map<string, Workspace>;
 
   constructor(private readonly workspaces: WorkspaceInfo[]) {
-    this.byId = new Map(workspaces.map((w) => [w.id, w]));
+    this.byId = new Map(workspaces.map((w) => [w.id, new LocalWorkspace(w)]));
   }
 
   list(): WorkspaceInfo[] {
     return this.workspaces;
   }
 
-  find(id: string): WorkspaceInfo | undefined {
+  get(id: string): Workspace | undefined {
     return this.byId.get(id);
   }
 }
 
 /**
  * Builds the default registry under `workspacesRoot`. The directories are
- * seeded in a later slice; listing them here does not require them to exist.
+ * seeded by `npm run seed`; listing them here does not require them to exist.
  */
 export function createDefaultRegistry(workspacesRoot: string): WorkspaceRegistry {
   const workspaces: WorkspaceInfo[] = [

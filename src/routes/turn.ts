@@ -25,7 +25,7 @@ export function turnRouter(registry: WorkspaceRegistry, runner: AgentRunner, log
       log.warn("rejected turn", { reason: "missing workspaceId" });
       return sendError(res, 400, "bad_request", "workspaceId required");
     }
-    const workspace = registry.find(workspaceId);
+    const workspace = registry.get(workspaceId);
     if (!workspace) {
       log.warn("rejected turn", { reason: "unknown workspaceId", workspaceId });
       return sendError(res, 404, "no_workspace", "unknown workspaceId");

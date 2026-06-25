@@ -1,5 +1,5 @@
 import type { AgentEvent } from "../protocol.js";
-import type { WorkspaceInfo } from "../workspace/types.js";
+import type { Workspace } from "../workspace/Workspace.js";
 
 /** One summarized conversational turn the client carries as history. */
 export interface HistoryTurn {
@@ -21,14 +21,14 @@ export interface TurnRequest {
 }
 
 /**
- * Everything a runner needs to execute one turn. `workspace` is the resolved
- * registry entry today; in Slice 3 the real runner takes a file-access
- * `Workspace` built from it. `emit` streams events the moment they occur;
- * `signal` aborts when the client disconnects.
+ * Everything a runner needs to execute one turn. `workspace` is the file-access
+ * object the agent reads/edits through (resolved from the registry by the
+ * route). `emit` streams events the moment they occur; `signal` aborts when the
+ * client disconnects.
  */
 export interface TurnInput {
   request: TurnRequest;
-  workspace: WorkspaceInfo;
+  workspace: Workspace;
   emit: (event: AgentEvent) => void;
   signal: AbortSignal;
 }
