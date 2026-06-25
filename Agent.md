@@ -77,6 +77,7 @@ sample workspace so the demo is repeatable.
 ## Workflow
 One slice per task; implement only that slice, no outside refactors. Fresh
 chat per slice — read the SPEC.md section first. Don't commit unless asked.
+Each slice ships as ONE pull request (see "Pull requests" below).
 
 ## Done (every slice)
 1. Server builds (tsc) and runs; its tests pass.
@@ -86,3 +87,36 @@ chat per slice — read the SPEC.md section first. Don't commit unless asked.
 3. Self-review the diff vs SPEC.md; list deviations.
 4. End with the handoff: Changes / Deviations / Tests (+passing run) / Manual
    verification (an end-to-end /turn via curl) / Out-of-scope noticed.
+
+## Pull requests (one slice = one PR)
+Every slice ships as a single PR off `main`. Before opening it, the PR must be
+BOTH self-reviewed (read your own diff against SPEC.md; list any deviations)
+AND test-verified (tests written and passing, `tsc` clean, server runs, and the
+manual curl checks pass). Don't open the PR until both hold.
+
+The PR description MUST use exactly these sections, in this order:
+
+```
+## Title
+<concise, slice-scoped, e.g. "Slice 2: AgentEvent protocol + SSE + FAKE_AGENT /turn">
+
+## Goal / why this PR exists
+<the user problem / SPEC section this slice satisfies, in 1–3 sentences>
+
+## Architecture changes
+<new/changed abstractions, interfaces, and seams; what swaps in production>
+
+## Files changed
+<bulleted path list with a few words on each>
+
+## Behavior added
+<endpoints/events/flows now working; reference the SPEC contract>
+
+## Tests / verification
+<unit tests added + a copy of the passing run; tsc clean>
+
+## Manual verification
+<the exact curl commands run and their observed output>
+```
+
+Keep it honest: note deviations from SPEC.md and anything left out of scope.
