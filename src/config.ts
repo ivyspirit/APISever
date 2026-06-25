@@ -9,8 +9,10 @@ export interface Config {
   port: number;
   workspacesRoot: string;
   fakeAgent: boolean;
-  /** Present only when set; absent is fine for Slice 1 and FAKE_AGENT mode. */
+  /** Present only when set; absent is fine for FAKE_AGENT mode. */
   openaiApiKey: string | undefined;
+  /** Chat model for the agent loop. Fixed params elsewhere for determinism. */
+  openaiModel: string;
 }
 
 function parseBool(value: string | undefined, fallback: boolean): boolean {
@@ -30,5 +32,6 @@ export function loadConfig(): Config {
       process.env.WORKSPACES_ROOT ?? "/Users/ivyli/Documents/Projects/workspace",
     fakeAgent: parseBool(process.env.FAKE_AGENT, false),
     openaiApiKey: process.env.OPENAI_API_KEY || undefined,
+    openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
   };
 }
