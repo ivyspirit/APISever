@@ -13,6 +13,8 @@ export interface Config {
   openaiApiKey: string | undefined;
   /** Chat model for the agent loop. Fixed params elsewhere for determinism. */
   openaiModel: string;
+  /** Whisper model for /stt transcription. */
+  sttModel: string;
 }
 
 function parseBool(value: string | undefined, fallback: boolean): boolean {
@@ -33,5 +35,6 @@ export function loadConfig(): Config {
     fakeAgent: parseBool(process.env.FAKE_AGENT, false),
     openaiApiKey: process.env.OPENAI_API_KEY || undefined,
     openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
+    sttModel: process.env.OPENAI_STT_MODEL || "whisper-1",
   };
 }

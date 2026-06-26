@@ -10,6 +10,9 @@ import { DefaultRiskClassifier } from "./agent/RiskClassifier.js";
 import { MemoryUndoStore } from "./agent/EditRecord.js";
 import { defaultTools } from "./agent/tools.js";
 import { createOpenAILLMClient } from "./openai/openaiClient.js";
+import { createOpenAISttService } from "./openai/openaiStt.js";
+import { sttRouter } from "./routes/stt.js";
+import type { SttService } from "./voice/SttService.js";
 import type { AgentRunner, TurnInput } from "./agent/AgentRunner.js";
 
 /**
@@ -28,6 +31,7 @@ function main(): void {
   // Pick the agent engine. FAKE_AGENT short-circuits to scripted events; the
   // real engine needs a key; absent both, stream a clear Error.
   const runner = selectRunner(config, undo, log);
+  const stt = selectStt(config, log);
 
   const app = express();
   app.use(express.json());
@@ -43,6 +47,7 @@ function main(): void {
 
   app.use(workspacesRouter(registry, log.child("workspaces")));
   app.use(turnRouter(registry, runner, log.child("turn")));
+  app.use(sttRouter(stt, log.child("stt")));
 
   app.listen(config.port, () => {
     log.info("harness server listening", {
@@ -74,6 +79,21 @@ function selectRunner(
   }
   log.warn("no OPENAI_API_KEY and FAKE_AGENT not set — /turn will stream an error");
   return missingKeyRunner();
+}
+
+function selectStt(
+  config: ReturnType<typeof loadConfig>,
+  log: ReturnType<typeof createLogger>,
+): SttService {
+  if (config.openaiApiKey) {
+    return createOpenAISttService(config.openaiApiKey, config.sttModel, log.child("openai"));
+  }
+  // No key: /stt stays mounted but fails clearly (it's a pure OpenAI proxy).
+  return {
+    async transcribe(): Promise<string> {
+      throw new Error("no OPENAI_API_KEY configured");
+    },
+  };
 }
 
 /** Streams a single Error when neither a key nor FAKE_AGENT is configured. */
